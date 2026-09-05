@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GBAPP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* MODO CLARO (Rojo Original) */
+            --color-main: #EF4444;       
+            --color-dark: #B91C1C;       
+            --color-bg: #FEF2F2;         
+            --color-card: #FFFFFF;       
+            --color-input: #FFF5F5;      
+            --color-text-main: #334155;  
+            --color-text-sec: #64748b;   
+            --color-border: #FECACA;     
+            --color-success: #16A34A;    
+            --color-warning: #F59E0B;    
+            --color-info: #2563EB;
+            --color-recipe: #7C3AED;       
+        }
+
+        [data-bs-theme="dark"] {
+            /* MODO OSCURO (Estrictamente tu color #64183F donde antes iba el rojo) */
+            --color-main: #64183F;       
+            --color-dark: #64183F;       
+            --color-bg: #120711;         
+            --color-card: #200D1B;       
+            --color-input: #120711;      
+            --color-text-main: #F8FAFC;  
+            --color-text-sec: #94A3B8;   
+            --color-border: #4A122F;     
+            --color-success: #059669;    
+            --color-info: #3B82F6;       
+        }
+
+        body { 
+            background-color: var(--color-bg); 
+            color: var(--color-text-main); 
+            transition: background-color 0.3s ease; 
+        }
+
+        @media (min-width: 992px) {
+            body {
+                display: flex;
+                min-height: 100vh;
+                margin: 0;
+            }
+            .sidebar {
+                width: 260px;
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 1000;
+                overflow-y: auto;
+            }
+            .main-content {
+                margin-left: 260px;
+                width: calc(100% - 260px);
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+            }
+            .main-content {
+                width: 100%;
+                padding: 20px;
+            }
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--color-dark), var(--color-main)) !important;
+            color: #ffffff !important;
+            padding: 20px;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff !important;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .nav-btn {
+            color: #ffffff !important;
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 9px 15px !important;
+            margin-bottom: 6px;
+            transition: all 0.3s ease;
+            display: block;
+            text-align: left;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: #ffffff;
+            transform: translateX(4px);
+        }
+
+        .card { background-color: var(--color-card); border-color: var(--color-border); color: var(--color-text-main); }
+        .card-header { border-bottom-color: var(--color-border); }
+        .brand-header { background: linear-gradient(90deg, var(--color-dark), var(--color-main)) !important; color: #ffffff !important; }
+        
+        .form-control, .form-select, input[type="date"] { background-color: var(--color-input); border-color: var(--color-border); color: var(--color-text-main); }
+        .form-control:focus, .form-select:focus, input[type="date"]:focus { background-color: var(--color-input); border-color: var(--color-main); color: var(--color-text-main); box-shadow: 0 0 0 0.25rem rgba(100, 24, 63, 0.3); }
+        .text-muted, .small { color: var(--color-text-sec) !important; }
+
+        .btn-brand { background-color: var(--color-main); color: #fff; border: none; }
+        .btn-brand:hover { filter: brightness(0.9); color: #fff; }
+        .btn-success { background-color: var(--color-success); border: none; color: #fff; }
+        .btn-success:hover { filter: brightness(0.9); color: #fff; }
+        .btn-warning { background-color: var(--color-warning); border: none; color: #fff; }
+        .btn-warning:hover { filter: brightness(0.9); color: #fff; }
+        .btn-info { background-color: var(--color-info); border: none; color: #fff; }
+        .btn-info:hover { filter: brightness(0.9); color: #fff; }
+        .btn-recipe { background-color: var(--color-recipe); border: none; color: #fff; }
+        .btn-recipe:hover { filter: brightness(0.9); color: #fff; }
+
+        .table { color: var(--color-text-main); border-color: var(--color-border); }
+        .table th { background-color: var(--color-bg); color: var(--color-text-main); border-bottom: 2px solid var(--color-border); }
+        .table td { background-color: var(--color-card); color: var(--color-text-main); border-color: var(--color-border); }
+        .table-warning td { background-color: rgba(245, 158, 11, 0.15) !important; }
+
+        .badge-success { background-color: var(--color-success); color: #fff; padding: 0.4em 0.6em; border-radius: 4px; }
+        .badge-warning { background-color: var(--color-warning); color: #fff; padding: 0.4em 0.6em; border-radius: 4px; }
+        .badge-info { background-color: var(--color-info); color: #fff; padding: 0.4em 0.6em; border-radius: 4px; }
+
+        .text-success-custom { color: var(--color-success) !important; }
+        .text-info-custom { color: var(--color-info) !important; }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA LATERAL (SIDEBAR) -->
+    <nav class="sidebar d-flex flex-column justify-content-between">
+        <div>
+            <a class="sidebar-brand" href="/dashboard">🍔 GBAPP</a>
+            
+            <div class="d-flex flex-column gap-1 mb-3">
+                <a class="nav-btn" href="/dashboard">📊 Inicio</a>
+                <a class="nav-btn" href="/ventas">🛒 Ventas</a>
+                <a class="nav-btn" href="/insumos">📦 Inventario</a>
+                <a class="nav-btn" href="/gastos">💸 Egresos</a>
+                <a class="nav-btn" href="/productos">🍔 Catálogo</a>
+                <a class="nav-btn" href="/clientes">👥 Clientes</a>
+                <a class="nav-btn" href="/historial_ventas">🧾 Cuentas</a>
+            </div>
+        </div>
+
+        <!-- SECCIÓN INFERIOR -->
+        <div class="pt-2 border-top border-light border-opacity-25">
+            <form action="/actualizar_tasa" method="POST" class="mb-2">
+                <div class="input-group input-group-sm mb-2">
+                    <span class="input-group-text bg-dark text-white border-0 fw-bold">Bs.</span>
+                    <input type="number" step="0.01" name="tasa_dolar" class="form-control fw-bold" value="{{ "%.2f"|format(tasa_dolar) }}" required>
+                    <button class="btn btn-info fw-bold text-white" title="Fijar Manual" type="submit">OK</button>
+                </div>
+            </form>
+            
+            <div class="d-grid gap-2 mb-3">
+                <a href="/sincronizar_tasa" class="btn btn-sm btn-success fw-bold" title="Sincronizar BCV por internet">🔄 Sincronizar BCV</a>
+                
+                <div class="btn-group btn-group-sm w-100" role="group">
+                    <a href="/exportar_db" class="btn btn-outline-light fw-bold" title="Descargar respaldo">💾 Exportar DB</a>
+                    <button type="button" class="btn btn-outline-light fw-bold" data-bs-toggle="modal" data-bs-target="#modalImportar" title="Subir respaldo">📂 Importar DB</button>
+                </div>
+
+                <button id="btn-theme" class="btn btn-outline-light btn-sm fw-bold" type="button">🌙 Modo Oscuro</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MODAL PARA IMPORTAR LA BASE DE DATOS -->
+    <div class="modal fade" id="modalImportar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content text-dark">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title fw-bold">📂 Restaurar Base de Datos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/importar_db" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <p class="small text-muted">Selecciona el archivo de respaldo (`gbapp_respaldo.db`) que guardaste previamente. Esto sobrescribirá los datos actuales con los del archivo.</p>
+                        <div class="mb-3">
+                            <input type="file" name="archivo_db" class="form-control" accept=".db" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success btn-sm fw-bold">⚠️ Subir y Reemplazar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                <strong>{{ message }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const btnTheme = document.getElementById('btn-theme');
+        const htmlElement = document.documentElement;
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        htmlElement.setAttribute('data-bs-theme', currentTheme);
+        if(currentTheme === 'dark') btnTheme.innerHTML = '☀️ Modo Claro';
+
+        btnTheme.addEventListener('click', () => {
+            const isLight = htmlElement.getAttribute('data-bs-theme') === 'light';
+            const newTheme = isLight ? 'dark' : 'light';
+            htmlElement.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            btnTheme.innerHTML = isLight ? '☀️ Modo Claro' : '🌙 Modo Oscuro';
+        });
+    </script>
+</body>
+</html>
