@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-main">📊 Resumen Financiero</h3>
+    <span class="badge bg-light text-dark fw-bold border p-2">Tasa Activa: Bs. {{ "%.2f"|format(tasa_dolar) }}</span>
+</div>
+
+<!-- TARJETAS DE MÉTRICAS (AHORA SON 4 COLUMNAS) -->
+<div class="row mb-4">
+    
+    <!-- INGRESOS (VENTAS) -->
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card shadow-sm h-100 border-start border-4" style="border-left-color: var(--color-success) !important;">
+            <div class="card-body">
+                <h6 class="text-muted fw-bold text-uppercase mb-1">Ventas (Hoy)</h6>
+                <h3 class="fw-bold text-success-custom mb-0">$ {{ "%.2f"|format(hoy) }}</h3>
+                <p class="small text-muted fw-bold mt-1 mb-2">Bs. {{ "%.2f"|format(hoy * tasa_dolar) }}</p>
+                <div class="border-top pt-2 mt-2">
+                    <small class="text-muted fw-bold">Mes: $ {{ "%.2f"|format(mes) }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EGRESOS (GASTOS) -->
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card shadow-sm h-100 border-start border-4" style="border-left-color: var(--color-main) !important;">
+            <div class="card-body">
+                <h6 class="text-muted fw-bold text-uppercase mb-1">Gastos (Hoy)</h6>
+                <h3 class="fw-bold text-danger mb-0" style="color: var(--color-main) !important;">$ {{ "%.2f"|format(gastos_hoy) }}</h3>
+                <p class="small text-muted fw-bold mt-1 mb-2">Bs. {{ "%.2f"|format(gastos_hoy * tasa_dolar) }}</p>
+                <div class="border-top pt-2 mt-2">
+                    <small class="text-muted fw-bold">Mes: $ {{ "%.2f"|format(gastos_mes) }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GANANCIA NETA -->
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card shadow-sm h-100 border-start border-4" style="border-left-color: var(--color-info) !important;">
+            <div class="card-body">
+                <h6 class="text-muted fw-bold text-uppercase mb-1">Ganancia Neta (Hoy)</h6>
+                <h3 class="fw-bold text-info-custom mb-0">$ {{ "%.2f"|format(ganancia_hoy) }}</h3>
+                <p class="small text-muted fw-bold mt-1 mb-2">Bs. {{ "%.2f"|format(ganancia_hoy * tasa_dolar) }}</p>
+                <div class="border-top pt-2 mt-2">
+                    <small class="text-muted fw-bold">Mes: $ {{ "%.2f"|format(ganancia_mes) }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POR COBRAR -->
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card shadow-sm h-100 border-start border-4" style="border-left-color: var(--color-warning) !important;">
+            <div class="card-body">
+                <h6 class="text-muted fw-bold text-uppercase mb-1">Dinero en la Calle</h6>
+                <h3 class="fw-bold mb-0" style="color: var(--color-warning);">$ {{ "%.2f"|format(por_cobrar) }}</h3>
+                <p class="small text-muted fw-bold mt-1 mb-2">Bs. {{ "%.2f"|format(por_cobrar * tasa_dolar) }}</p>
+                <div class="border-top pt-2 mt-2">
+                    <a href="/historial_ventas?estado=Pendiente" class="text-decoration-none fw-bold small text-warning">Ver deudores ➔</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- TABLAS INFERIORES -->
+<div class="row">
+    <!-- Top Productos -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header brand-header">
+                <h5 class="mb-0">⭐ Top 5 Productos Más Vendidos</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for p in top_productos %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3" style="background-color: var(--color-card); color: var(--color-text-main); border-color: var(--color-border);">
+                        <span class="fw-bold">{{ p['nombre'] }}</span>
+                        <span class="badge bg-brand rounded-pill fs-6 px-3" style="background-color: var(--color-main);">
+                            {{ p['cantidad_vendida'] }} unds
+                        </span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-center py-4 text-muted" style="background-color: var(--color-card); border-color: var(--color-border);">
+                        Todavía no hay ventas registradas.
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Acceso Rápido -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">⚡ Accesos Rápidos</h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center gap-3">
+                <a href="/ventas" class="btn btn-success btn-lg fw-bold w-100 py-3 shadow-sm">🍔 Ir al Punto de Venta</a>
+                <a href="/gastos" class="btn btn-brand btn-lg fw-bold w-100 py-3 shadow-sm text-white">💸 Registrar un Gasto</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
