@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-main">🧾 Historial de Cuentas y Ventas</h3>
+    <span class="badge bg-light text-dark fw-bold border p-2">Tasa Activa: Bs. {{ "%.2f"|format(tasa_dolar) }}</span>
+</div>
+
+<!-- FORMULARIO DE FILTROS -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="/historial_ventas" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-bold small">Fecha</label>
+                <input type="date" name="fecha" class="form-control form-control-sm" value="{{ fecha_filtro }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold small">Estado</label>
+                <select name="estado" class="form-select form-select-sm fw-bold">
+                    <option value="Todos" {% if estado_filtro == 'Todos' %}selected{% endif %}>Todos</option>
+                    <option value="Pagado" {% if estado_filtro == 'Pagado' %}selected{% endif %}>Pagado</option>
+                    <option value="Pendiente" {% if estado_filtro == 'Pendiente' %}selected{% endif %}>Pendiente (Deuda)</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Cliente</label>
+                <select name="cliente_id" class="form-select form-select-sm fw-bold">
+                    <option value="">-- Todos los clientes --</option>
+                    {% for c in clientes %}
+                    <option value="{{ c['id'] }}" {% if cliente_filtro|int == c['id'] %}selected{% endif %}>{{ c['nombre'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-brand btn-sm fw-bold w-100">Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- TABLA DE FACTURAS -->
+<div class="card shadow-sm">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">ID / Fecha</th>
+                    <th>Cliente</th>
+                    <th>Detalle del Pedido</th>
+                    <th>Tipo / Método</th>
+                    <th>Total ($ / Bs.)</th>
+                    <th class="text-center">Estado / Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in facturas %}
+                <tr class="{% if f['estado'] == 'Pendiente' %}table-warning{% endif %}">
+                    <td class="ps-3">
+                        <span class="fw-bold">#{{ f['id'] }}</span><br>
+                        <span class="small text-muted">{{ f['fecha'][:16] }}</span>
+                    </td>
+                    <td>
+                        <span class="fw-bold">{{ f['cliente_nombre'] }}</span><br>
+                        <span class="small text-muted">C.I: {{ f['cliente_cedula'] }}</span>
+                    </td>
+                    <td class="small">{{ f['detalles'] }}</td>
+                    <td>
+                        <span class="badge {% if f['tipo_venta'] == 'Contado' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {{ f['tipo_venta'] }}
+                        </span><br>
+                        <span class="small fw-bold text-muted">{{ f['metodo_pago'] }}</span>
+                    </td>
+                    <td>
+                        <span class="fw-bold text-success-custom">$ {{ "%.2f"|format(f['total']) }}</span><br>
+                        <span class="small text-muted fw-bold">Bs. {{ "%.2f"|format(f['total'] * tasa_dolar) }}</span>
+                    </td>
+                    <td class="text-center">
+                        {% if f['estado'] == 'Pendiente' %}
+                            <!-- BOTÓN MODAL O DESPLEGABLE PARA SALDAR DEUDA ELIGIENDO BANCO -->
+                            <button class="btn btn-sm btn-success fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPagar{{ f['id'] }}">
+                                💵 Cobrar Deuda
+                            </button>
+
+                            <!-- MODAL DE COBRO -->
+                            <div class="modal fade" id="modalPagar{{ f['id'] }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content text-start">
+                                        <div class="modal-header bg-success text-white">
+                                            <h5 class="modal-title fw-bold">Cobrar Factura #{{ f['id'] }} ({{ f['cliente_nombre'] }})</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form action="/saldar_deuda/{{ f['id'] }}" method="POST">
+                                            <div class="modal-body">
+                                                <p class="fw-bold">Monto a cancelar: $ {{ "%.2f"|format(f['total']) }} (Bs. {{ "%.2f"|format(f['total'] * tasa_dolar) }})</p>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Selecciona el método en que pagó:</label>
+                                                    <select name="metodo_pago" class="form-select fw-bold border-success" required>
+                                                        <option value="Efectivo $">💵 Efectivo ($)</option>
+                                                        <option value="Efectivo Bs">💵 Efectivo (Bs.)</option>
+                                                        <option value="Pago Móvil / Transferencia - Banesco">📱 Banesco</option>
+                                                        <option value="Pago Móvil / Transferencia - Mercantil">📱 Mercantil</option>
+                                                        <option value="Pago Móvil / Transferencia - BNC">📱 BNC (Banco Nacional de Crédito)</option>
+                                                        <option value="Pago Móvil / Transferencia - Banco de Venezuela">📱 Banco de Venezuela</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-success btn-sm fw-bold">Confirmar Pago</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <span class="badge bg-success px-3 py-2">Pagado</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted fw-bold">No se encontraron facturas con los filtros seleccionados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
