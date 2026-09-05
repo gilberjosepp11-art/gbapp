@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <!-- Panel Izquierdo: Agregar Nuevo -->
+    <div class="col-md-3">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header brand-header">
+                <h5 class="mb-0">Nuevo Producto</h5>
+            </div>
+            <div class="card-body">
+                <form action="/agregar_producto" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Nombre del Producto</label>
+                        <input type="text" class="form-control" name="nombre" placeholder="Ej: Perro Jumbo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Precio Venta ($ USD)</label>
+                        <input type="number" step="0.01" class="form-control" name="precio" placeholder="0.00" required>
+                    </div>
+                    <button type="submit" class="btn btn-success fw-bold w-100">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Derecho: Menú Actual con Análisis de Costos -->
+    <div class="col-md-9">
+        <div class="card shadow-sm border-0">
+            <div class="card-header brand-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Menú Actual y Rentabilidad</h5>
+                <span class="badge bg-light text-dark fw-bold">Tasa: Bs. {{ "%.2f"|format(tasa_dolar) }}</span>
+            </div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Producto</th>
+                            <th class="text-center">Costo (Receta)</th>
+                            <th class="text-center">Precio (Venta)</th>
+                            <th class="text-center">Ganancia Neta</th>
+                            <th class="text-center">Configurar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr>
+                            <td class="ps-3 fw-bold text-main">{{ producto['nombre'] }}</td>
+                            
+                            <!-- Costo Real según receta -->
+                            <td class="text-center">
+                                <span class="fw-bold text-danger">$ {{ "%.2f"|format(producto['costo_real']) }}</span>
+                            </td>
+                            
+                            <!-- Precio de Venta (Dólar y Bolívares) -->
+                            <td class="text-center">
+                                <span class="fw-bold text-success-custom">$ {{ "%.2f"|format(producto['precio_venta']) }}</span><br>
+                                <span class="small text-muted fw-bold">Bs. {{ "%.2f"|format(producto['precio_venta'] * tasa_dolar) }}</span>
+                            </td>
+                            
+                            <!-- Ganancia y Margen % -->
+                            <td class="text-center">
+                                <span class="fw-bold text-info-custom">$ {{ "%.2f"|format(producto['ganancia']) }}</span><br>
+                                {% if producto['margen'] >= 0 %}
+                                    <span class="badge bg-success shadow-sm">{{ "%.0f"|format(producto['margen']) }}% Margen</span>
+                                {% else %}
+                                    <span class="badge bg-brand shadow-sm">Pérdida</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Botones de Acción -->
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <a href="/receta/{{ producto['id'] }}" class="btn btn-sm btn-recipe fw-bold text-white shadow-sm" title="Armar Ingredientes">📝 Receta</a>
+                                    <a href="/editar_producto/{{ producto['id'] }}" class="btn btn-sm btn-warning fw-bold shadow-sm">Editar</a>
+                                    <a href="/eliminar_producto/{{ producto['id'] }}" class="btn btn-sm btn-brand fw-bold shadow-sm" onclick="return confirm('¿Borrar producto del menú?');">X</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted fw-bold">No hay productos registrados en el menú.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-light text-muted small">
+                * El <b>Costo</b> se calcula sumando el costo unitario de todos los ingredientes agregados en "📝 Receta". <br>
+                * El <b>Margen</b> es el porcentaje limpio de ganancia sobre el precio de venta.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
