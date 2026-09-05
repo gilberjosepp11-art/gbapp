@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <!-- Panel Izquierdo: Agregar Cliente -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header brand-header">
+                <h5 class="mb-0">👥 Nuevo Cliente</h5>
+            </div>
+            <div class="card-body">
+                <form action="/agregar_cliente" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Cédula / RIF</label>
+                        <input type="text" class="form-control" name="cedula" placeholder="Ej: V-12345678" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre y Apellido</label>
+                        <input type="text" class="form-control" name="nombre" placeholder="Ej: Juan Pérez" required>
+                    </div>
+                    <button type="submit" class="btn btn-success fw-bold w-100">Guardar Cliente</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Derecho: Lista de Clientes -->
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Directorio de Clientes</h5>
+            </div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Cédula / RIF</th>
+                            <th>Nombre</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in clientes %}
+                        <tr>
+                            <td class="ps-3 fw-bold">{{ c['cedula'] }}</td>
+                            <td>{{ c['nombre'] }}</td>
+                            <td class="text-center">
+                                <!-- BOTÓN DE EDITAR CLIENTE -->
+                                {% if c['id'] != 1 %}
+                                <a href="/editar_cliente/{{ c['id'] }}" class="btn btn-sm btn-warning fw-bold">Editar</a>
+                                {% else %}
+                                <span class="text-muted small">Predeterminado</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">No hay clientes registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
