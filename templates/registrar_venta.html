@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <!-- Panel Izquierdo: Selección de Productos -->
+    <div class="col-md-5 mb-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header brand-header">
+                <h5 class="mb-0">🍔 Agregar al Carrito</h5>
+            </div>
+            <div class="card-body">
+                <form action="/agregar_carrito" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Producto</label>
+                        <select name="producto_id" class="form-select fw-bold" required>
+                            <option value="">-- Elige un producto --</option>
+                            {% for p in productos %}
+                            <option value="{{ p['id'] }}">{{ p['nombre'] }} ($ {{ "%.2f"|format(p['precio_venta']) }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Cantidad</label>
+                        <input type="number" class="form-control fw-bold" name="cantidad" value="1" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-success fw-bold w-100 py-2">➕ Agregar al Pedido</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Derecho: Resumen del Pedido y Pago -->
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">🛒 Pedido Actual</h5>
+                <span class="badge bg-light text-dark fw-bold">Tasa: Bs. {{ "%.2f"|format(tasa_dolar) }}</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Producto</th>
+                            <th class="text-center">Cant.</th>
+                            <th class="text-center">Subtotal ($)</th>
+                            <th class="text-center">Quitar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in carrito %}
+                        <tr>
+                            <td class="ps-3 fw-bold">{{ item['nombre'] }}</td>
+                            <td class="text-center">{{ item['cantidad'] }}</td>
+                            <td class="text-center fw-bold text-success-custom">$ {{ "%.2f"|format(item['subtotal']) }}</td>
+                            <td class="text-center">
+                                <a href="/eliminar_carrito/{{ loop.index0 }}" class="btn btn-sm btn-brand py-0 px-2 fw-bold">X</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted fw-bold">El carrito está vacío.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if carrito %}
+            <!-- SE CAMBIÓ EL FONDO A UN GRIS CLARO / OSCURO SEGÚN EL TEMA Y FUENTES OSCURAS PARA MÁXIMA LEGIBILIDAD -->
+            <div class="card-footer p-4" style="background-color: var(--color-bg); border-top: 2px solid var(--color-border);">
+                
+                <h4 class="fw-bold mb-3 text-end" style="color: var(--color-text-main);">
+                    Total: $ {{ "%.2f"|format(total_carrito) }} <br>
+                    <small class="fs-6 fw-bold" style="color: var(--color-main);">Bs. {{ "%.2f"|format(total_carrito * tasa_dolar) }}</small>
+                </h4>
+                
+                <form action="/procesar_venta" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" style="color: var(--color-text-main);">Cliente</label>
+                        <select name="cliente_id" class="form-select fw-bold shadow-sm" required>
+                            {% for c in clientes %}
+                            <option value="{{ c['id'] }}" {% if c['id'] == 1 %}selected{% endif %}>{{ c['nombre'] }} ({{ c['cedula'] }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" style="color: var(--color-text-main);">Tipo de Venta</label>
+                        <select name="tipo_venta" id="tipo_venta" class="form-select fw-bold shadow-sm" onchange="toggleMetodoPago()" required>
+                            <option value="Contado">Contado (Pago Inmediato)</option>
+                            <option value="Credito">Crédito (Fiado)</option>
+                        </select>
+                    </div>
+
+                    <!-- SELECTOR DE MÉTODO DE PAGO -->
+                    <div class="mb-3" id="bloque_metodo_pago">
+                        <label class="form-label fw-bold text-success-custom">Método de Pago</label>
+                        <select name="metodo_pago" class="form-select fw-bold border-success shadow-sm">
+                            <option value="Efectivo $">💵 Efectivo ($)</option>
+                            <option value="Efectivo Bs">💵 Efectivo (Bs.)</option>
+                            <option value="Pago Móvil / Transferencia - Banesco">📱 Banesco</option>
+                            <option value="Pago Móvil / Transferencia - Mercantil">📱 Mercantil</option>
+                            <option value="Pago Móvil / Transferencia - BNC">📱 BNC (Banco Nacional de Crédito)</option>
+                            <option value="Pago Móvil / Transferencia - Banco de Venezuela">📱 Banco de Venezuela</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success fw-bold w-100 py-3 shadow mt-3">✅ Facturar y Cobrar</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleMetodoPago() {
+    let tipoVenta = document.getElementById("tipo_venta").value;
+    let bloquePago = document.getElementById("bloque_metodo_pago");
+    if (tipoVenta === "Credito") {
+        bloquePago.style.display = "none";
+    } else {
+        bloquePago.style.display = "block";
+    }
+}
+</script>
+{% endblock %}
