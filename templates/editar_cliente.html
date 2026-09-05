@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header brand-header">
+                <h5 class="mb-0">✏️ Editar Cliente</h5>
+            </div>
+            <div class="card-body">
+                <form action="/editar_cliente/{{ cliente['id'] }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Cédula o Rif</label>
+                        <input type="text" class="form-control fw-bold" name="cedula" value="{{ cliente['cedula'] }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre y Apellido</label>
+                        <input type="text" class="form-control fw-bold" name="nombre" value="{{ cliente['nombre'] }}" required>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <a href="/clientes" class="btn btn-secondary fw-bold w-50">Cancelar</a>
+                        <button type="submit" class="btn btn-success fw-bold w-50">💾 Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
