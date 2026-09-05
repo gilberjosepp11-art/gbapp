@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="/productos" class="btn btn-outline-secondary btn-sm fw-bold">← Volver al Catálogo</a>
+</div>
+
+<div class="row">
+    <!-- Panel Agregar a Receta -->
+    <div class="col-md-5 mb-4">
+        <div class="card shadow border-0">
+            <div class="card-header text-white" style="background-color: var(--color-recipe);">
+                <h5 class="mb-0">Construir Receta: <span class="fw-bold">{{ producto['nombre'] }}</span></h5>
+            </div>
+            <div class="card-body">
+                <form action="/agregar_a_receta" method="POST">
+                    <input type="hidden" name="producto_id" value="{{ producto['id'] }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Seleccionar Ingrediente</label>
+                        <select name="insumo_id" class="form-select fw-bold" required>
+                            <option value="">-- Elige un insumo --</option>
+                            {% for i in insumos %}
+                                <option value="{{ i['id'] }}">{{ i['nombre'] }} ({{ i['unidad_medida'] }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Cantidad a descontar por cada venta</label>
+                        <input type="number" step="0.001" class="form-control fw-bold" name="cantidad_usada" placeholder="Ej: 1 (Pan) o 0.05 (Litros Salsa)" required>
+                        <small class="text-muted">¿Cuánto gasta hacer 1 unidad de este producto?</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-recipe fw-bold w-100 text-white">➕ Agregar a la Hamburguesa/Perro</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de la Receta -->
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Ficha Técnica Actual</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Ingrediente (Insumo)</th>
+                            <th>Cantidad que Descuenta</th>
+                            <th class="text-center">Quitar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in receta %}
+                        <tr>
+                            <td class="ps-3 fw-bold text-main">{{ r['nombre'] }}</td>
+                            <td class="fw-bold">
+                                {{ r['cantidad_usada'] }} <span class="small text-muted">{{ r['unidad_medida'] }}</span>
+                            </td>
+                            <td class="text-center">
+                                <a href="/eliminar_de_receta/{{ r['id'] }}/{{ producto['id'] }}" class="btn btn-sm btn-brand py-0 px-2 fw-bold" title="Quitar de la receta">X</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-muted fw-bold">Este producto aún no tiene ingredientes. No descontará nada del inventario.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
