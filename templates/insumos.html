@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold text-main">📦 Control de Inventario y Compras Globales</h3>
+</div>
+
+<div class="row">
+    <!-- Panel Izquierdo: Formularios (Crear Insumo y Agregar al Carrito de Compra) -->
+    <div class="col-md-5 mb-4">
+        
+        <!-- Tarjeta 1: Crear Insumo Nuevo -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header brand-header">
+                <h6 class="mb-0">1. Registrar Nuevo Insumo en el Sistema</h6>
+            </div>
+            <div class="card-body">
+                <form action="/agregar_insumo" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Nombre (Ej: Pan, Carne, Mayonesa)</label>
+                        <input type="text" class="form-control form-control-sm" name="nombre" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-bold small">Medida</label>
+                            <select name="unidad" class="form-select form-select-sm fw-bold" required>
+                                <option value="Unds">Unds</option>
+                                <option value="Kilos">Kilos</option>
+                                <option value="Litros">Litros</option>
+                            </select>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-bold small">Stock Inicial</label>
+                            <input type="number" step="0.01" class="form-control form-control-sm" name="cantidad" value="0" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-info fw-bold text-white w-100">Crear Insumo</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tarjeta 2: Agregar Ítem al Carrito de Compra (Múltiple) -->
+        <div class="card shadow border-success border-2">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">2. Armar Factura de Compra</h5>
+            </div>
+            <div class="card-body">
+                <form action="/agregar_carrito_compra" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Seleccionar Insumo</label>
+                        <select name="insumo_id" class="form-select fw-bold" required>
+                            <option value="">-- Elige un ingrediente --</option>
+                            {% for i in insumos %}
+                            <option value="{{ i['id'] }}">{{ i['nombre'] }} ({{ i['unidad_medida'] }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-success-custom">Cantidad Comprada</label>
+                        <input type="number" step="0.01" class="form-control" name="cantidad_comprada" placeholder="Ej: 20" required>
+                    </div>
+
+                    <!-- Convertidor Dual de Monedas (Bs y $) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-success-custom">Costo Unitario (Por Unidad/Kilo/Litro)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light fw-bold text-primary border-end-0">Bs.</span>
+                            <input type="number" step="0.01" class="form-control border-start-0" id="costo_bs" placeholder="En Bs.">
+                            
+                            <span class="input-group-text bg-dark text-white fw-bold border-end-0">$</span>
+                            <input type="number" step="0.0001" class="form-control border-start-0" name="costo_unitario" id="costo_usd" placeholder="En $" required>
+                        </div>
+                        <small class="text-muted d-block mt-1">Escribe en Bs. o en $ y se calculará solo.</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success fw-bold w-100 shadow-sm">➕ Añadir a la Lista de Compra</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Panel Derecho: Lista de Compra Pendiente y Existencias -->
+    <div class="col-md-7">
+        
+        <!-- CARRITO DE COMPRAS TEMPORAL -->
+        <div class="card shadow-sm mb-4 border-success border-2">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">🛒 Factura en Curso (Lista para Procesar)</h5>
+                <span class="badge bg-light text-success fw-bold fs-6">$ {{ "%.2f"|format(total_carrito_compra) }}</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Insumo</th>
+                            <th>Cant.</th>
+                            <th>Costo c/u</th>
+                            <th>Subtotal</th>
+                            <th class="text-center">Quitar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in carrito_compra %}
+                        <tr>
+                            <td class="ps-3 fw-bold">{{ item['nombre'] }}</td>
+                            <td>{{ item['cantidad'] }} <span class="small text-muted">{{ item['unidad'] }}</span></td>
+                            <td>$ {{ "%.2f"|format(item['costo_unitario']) }}</td>
+                            <td class="fw-bold text-success-custom">$ {{ "%.2f"|format(item['subtotal']) }}</td>
+                            <td class="text-center">
+                                <a href="/eliminar_carrito_compra/{{ loop.index0 }}" class="btn btn-sm btn-brand py-0 px-2 fw-bold">X</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-3 text-muted">Aún no has agregado ningún rubro a esta compra. Usa el formulario de la izquierda.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if carrito_compra %}
+            <div class="card-footer bg-light">
+                <form action="/procesar_compra_multiple" method="POST">
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold mb-1">Nombre del Proveedor o Local:</label>
+                        <input type="text" class="form-control form-control-sm" name="proveedor" placeholder="Ej: Mayorista El Bodegón" required>
+                    </div>
+                    <button type="submit" class="btn btn-success fw-bold w-100 py-2 shadow">
+                        ✅ Procesar Factura Completa (Suma Inventario y Registra Gasto)
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- TABLA DE INVENTARIO ACTUAL -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">📦 Existencias Actuales en Almacén</h5>
+            </div>
+            <div class="card-body p-0 table-responsive" style="max-height: 300px; overflow-y: auto;">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th class="ps-3">Insumo</th>
+                            <th class="text-center">Stock</th>
+                            <th class="text-center">Costo Unitario</th>
+                            <th class="text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for insumo in insumos %}
+                        <tr class="{% if insumo['cantidad'] <= 10 %}table-warning{% endif %}">
+                            <td class="ps-3 fw-bold">
+                                {{ insumo['nombre'] }} <span class="badge bg-secondary rounded-pill fw-normal">{{ insumo['unidad_medida'] }}</span>
+                            </td>
+                            <td class="text-center fw-bold {% if insumo['cantidad'] <= 10 %}text-danger{% else %}text-success-custom{% endif %}">
+                                {{ "%.2f"|format(insumo['cantidad']) }}
+                            </td>
+                            <td class="text-center text-muted fw-bold">$ {{ "%.2f"|format(insumo['costo_unitario']) }}</td>
+                            <td class="text-center">
+                                <a href="/eliminar_insumo/{{ insumo['id'] }}" class="btn btn-sm btn-brand py-0 px-1 fw-bold" onclick="return confirm('¿Borrar insumo?');">X</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-3 text-muted">No hay insumos registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- SCRIPT DE CONVERSIÓN AUTOMÁTICA -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const tasaActiva = {{ tasa_dolar }};
+    const inputBs = document.getElementById("costo_bs");
+    const inputUsd = document.getElementById("costo_usd");
+
+    inputBs.addEventListener("input", function() {
+        if (this.value) {
+            let valorUsd = parseFloat(this.value) / tasaActiva;
+            inputUsd.value = valorUsd.toFixed(4);
+        } else {
+            inputUsd.value = '';
+        }
+    });
+
+    inputUsd.addEventListener("input", function() {
+        if (this.value) {
+            let valorBs = parseFloat(this.value) * tasaActiva;
+            inputBs.value = valorBs.toFixed(2);
+        } else {
+            inputBs.value = '';
+        }
+    });
+});
+</script>
+{% endblock %}
