@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <!-- Panel Agregar Gasto -->
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header brand-header">
+                <h5 class="mb-0">Registrar Egreso Libre</h5>
+            </div>
+            <div class="card-body">
+                <form action="/agregar_gasto" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción del gasto</label>
+                        <input type="text" class="form-control" name="descripcion" placeholder="Ej: Compra de hielo, Pago de luz..." required>
+                    </div>
+                    
+                    <!-- NUEVO: CAMPO DE GASTO DUAL (Bs y $) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Monto gastado</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light fw-bold text-primary border-end-0">Bs.</span>
+                            <input type="number" step="0.01" class="form-control border-start-0" id="gasto_bs" placeholder="En Bs.">
+                            
+                            <span class="input-group-text bg-dark text-white fw-bold border-end-0">$</span>
+                            <input type="number" step="0.01" class="form-control border-start-0" name="monto" id="gasto_usd" placeholder="En $" required>
+                        </div>
+                        <small class="text-muted d-block mt-1 lh-1">Tasa activa: Bs. {{ "%.2f"|format(tasa_dolar) }}. Escribe en una casilla y la otra se calcula sola.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-brand fw-bold w-100 mt-2">Guardar Gasto</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla Historial de Gastos -->
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Historial de Salidas de Dinero</h5>
+                <span class="badge bg-light text-dark fw-bold">Tasa: Bs. {{ "%.2f"|format(tasa_dolar) }}</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Fecha</th>
+                            <th>Descripción</th>
+                            <th>Monto ($)</th>
+                            <th>Monto (Bs.)</th>
+                            <th class="text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gasto in gastos %}
+                        <tr>
+                            <td class="ps-3 small">{{ gasto['fecha'][:10] }}</td>
+                            <td class="fw-bold">{{ gasto['descripcion'] }}</td>
+                            <td class="fw-bold" style="color: var(--color-main);">$ {{ "%.2f"|format(gasto['monto']) }}</td>
+                            <td class="fw-bold text-muted">Bs. {{ "%.2f"|format(gasto['monto'] * tasa_dolar) }}</td>
+                            <td class="text-center">
+                                <a href="/eliminar_gasto/{{ gasto['id'] }}" class="btn btn-sm btn-outline-danger fw-bold py-0" onclick="return confirm('¿Borrar este gasto del registro?');">X</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted fw-bold">No hay gastos registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT DE CONVERSIÓN AUTOMÁTICA -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const tasaActiva = {{ tasa_dolar }};
+    const inputGastoBs = document.getElementById("gasto_bs");
+    const inputGastoUsd = document.getElementById("gasto_usd");
+
+    // Cuando el usuario escribe en Bolívares
+    inputGastoBs.addEventListener("input", function() {
+        if (this.value) {
+            let valorUsd = parseFloat(this.value) / tasaActiva;
+            inputGastoUsd.value = valorUsd.toFixed(2);
+        } else {
+            inputGastoUsd.value = '';
+        }
+    });
+
+    // Cuando el usuario escribe en Dólares
+    inputGastoUsd.addEventListener("input", function() {
+        if (this.value) {
+            let valorBs = parseFloat(this.value) * tasaActiva;
+            inputGastoBs.value = valorBs.toFixed(2);
+        } else {
+            inputGastoBs.value = '';
+        }
+    });
+});
+</script>
+{% endblock %}
